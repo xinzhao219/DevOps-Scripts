@@ -1,0 +1,30 @@
+---
+- hosts: stapp03
+  become: true
+  tasks:
+  - name: install httpd
+    yum:
+      name:
+      - httpd
+      - php
+      state: present
+  - name: make root path
+    file:
+      path: /var/www/html/myroot
+      state: directory
+  - name: change document root of Apache
+    lineinfile:
+      path: /etc/httpd/conf/httpd.conf
+      regexp: '^DocumentRoot "/var/www/html"'
+      line: DocumentRoot "/var/www/html/myroot"
+  - name: copy file to stapp03
+    copy:
+      src: ~/playbooks/templates/phpinfo.php.j2
+      dest: /var/www/html/myroot/phpinfo.php
+      owner: apache
+      group: apache
+  - name: start and enable httpd service
+    service:
+      name: httpd
+      state: started
+      enabled: yes
